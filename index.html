@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PapelPrint AI - Oficial (Motor Groq)</title>
+    <title>PapelPrint AI - Oficial (Groq V4)</title>
     <style>
-        body { background: #0b1020; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; height: 95vh; }
+        body { background: #0b1020; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; height: 95vh; }
         .container { max-width: 900px; margin: auto; width: 100%; display: flex; flex-grow: 1; flex-direction: column; }
         .chat-box { background: #151c30; flex-grow: 1; border-radius: 12px; padding: 20px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #29354f; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .msg { margin-bottom: 15px; padding: 15px; border-radius: 10px; line-height: 1.6; white-space: pre-wrap; }
@@ -23,7 +23,7 @@
     <div class="container">
         <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <h1 style="margin:0; font-size: 24px;">🧠 PapelPrint AI</h1>
-            <div id="status">Status: Aguardando Chave gsk_...</div>
+            <div id="status">Status: Aguardando Motor...</div>
         </header>
 
         <div class="config-bar">
@@ -32,33 +32,28 @@
         </div>
 
         <div class="chat-box" id="chat">
-            <div class="msg ia">Motor Groq Detectado. Insira a chave gsk_ para carregar as habilidades de design, PDF e IA dos 21 repositórios.</div>
+            <div class="msg ia">Habilidades prontas: 21 Repositórios (PDF, Design, IA). Insira a chave gsk_ para começar.</div>
         </div>
 
         <div style="display: flex; gap: 10px;">
-            <input type="text" id="userInput" placeholder="O que vamos criar hoje?" onkeypress="if(event.key==='Enter') enviar()">
+            <input type="text" id="userInput" placeholder="O que vamos imprimir ou criar?" onkeypress="if(event.key==='Enter') enviar()">
             <button onclick="enviar()">ENVIAR</button>
         </div>
     </div>
 
     <script>
         let CHAVE_GROQ = "";
-        const CONTEXTO = `Você é o PapelPrint AI. Você tem o conhecimento técnico de 21 repositórios:
-        - Design/Gráfica: Vectorcraft, Designcraft, Figcraft, Gridcraft, CADcraft, Photocraft, Lightcraft, Effectcraft.
-        - Documentos: PDFcraft, Wordcraft, Deckcraft.
-        - Mídia/Som: Filmcraft, Soundcraft, OpenMAIC.
-        - IA: OmniRoute, Claude-mem, Headroom, Vibe Toolkit, OpenClaude, MonkeyCode, MiniMind.
-        Responda de forma técnica, prestativa e em português.`;
+        const CONTEXTO = "Você é o PapelPrint AI. Você domina 21 repositórios: Vectorcraft, PDFcraft, Wordcraft, Lightcraft, Effectcraft, Filmcraft, Designcraft, Figcraft, Gridcraft, CADcraft, Photocraft, Soundcraft, Deckcraft, OpenMAIC, OmniRoute, Vibe Toolkit, Claude-mem, Headroom, OpenClaude, MonkeyCode, MiniMind. Responda tecnicamente em português.";
 
         function conectar() {
             const k = document.getElementById('apiKey').value.trim();
             if (k.startsWith("gsk_")) {
                 CHAVE_GROQ = k;
-                document.getElementById('status').innerText = "✅ MOTOR GROQ ONLINE";
+                document.getElementById('status').innerText = "✅ MOTOR ATUALIZADO (Llama 3.3)";
                 document.getElementById('status').style.color = "#22c55e";
-                addMsg("ia", "Habilidades carregadas! O sistema está pronto para operar.");
+                addMsg("ia", "Conectado ao modelo Llama 3.3! O sistema PapelPrint está operacional.");
             } else {
-                alert("Use a chave que começa com gsk_");
+                alert("Use a chave gsk_ correta.");
             }
         }
 
@@ -88,12 +83,11 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: "llama-3.1-70b-versatile",
+                        model: "llama-3.3-70b-versatile",
                         messages: [
                             { role: "system", content: CONTEXTO },
                             { role: "user", content: texto }
-                        ],
-                        temperature: 0.7
+                        ]
                     })
                 });
 
@@ -103,10 +97,10 @@
                     addMsg("ia", data.choices[0].message.content);
                     document.getElementById('status').innerText = "✅ Online";
                 } else {
-                    addMsg("ia", "Erro na resposta: " + (data.error ? data.error.message : "Desconhecido"));
+                    addMsg("ia", "Erro na Resposta: " + (data.error ? data.error.message : "Desconhecido"));
                 }
             } catch (e) {
-                addMsg("ia", "Erro de conexão: " + e.message);
+                addMsg("ia", "Erro de Conexão: " + e.message);
             }
         }
     </script>
