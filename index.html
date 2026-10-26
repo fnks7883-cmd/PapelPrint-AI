@@ -5,93 +5,106 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PapelPrint AI - Central</title>
     <style>
-        body { background-color: #0b1020; color: white; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; height: 95vh; }
-        .container { max-width: 800px; margin: auto; width: 100%; display: flex; flex-direction: column; flex-grow: 1; }
-        .chat-box { background: #151c30; flex-grow: 1; border-radius: 12px; padding: 20px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #29354f; }
-        .input-area { display: flex; gap: 10px; }
-        input { flex: 1; padding: 15px; border-radius: 8px; border: 1px solid #29354f; background: #0b1020; color: white; }
-        button { background: #2563eb; color: white; border: none; padding: 15px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .msg { margin-bottom: 15px; padding: 12px; border-radius: 12px; max-width: 85%; line-height: 1.5; white-space: pre-wrap; }
-        .ia { background: #29354f; align-self: flex-start; border-left: 4px solid #facc15; }
-        .user { background: #2563eb; margin-left: auto; }
-        .status { font-size: 12px; color: #facc15; margin-bottom: 10px; }
+        body { background: #0b1020; color: white; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; height: 95vh; }
+        .container { max-width: 850px; margin: auto; width: 100%; display: flex; flex-grow: 1; flex-direction: column; }
+        .chat-box { background: #151c30; flex-grow: 1; border-radius: 12px; padding: 20px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #29354f; }
+        .msg { margin-bottom: 15px; padding: 15px; border-radius: 10px; line-height: 1.5; white-space: pre-wrap; }
+        .ia { background: #29354f; border-left: 4px solid #facc15; }
+        .user { background: #2563eb; margin-left: 50px; }
+        .config { background: #1e293b; padding: 15px; border-radius: 10px; border: 1px solid #facc15; margin-bottom: 10px; }
+        input { padding: 12px; border-radius: 5px; border: 1px solid #29354f; background: #0b1020; color: white; }
+        button { background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        #status { font-size: 12px; margin-top: 10px; color: #facc15; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🧠 PapelPrint AI</h1>
-        
-        <div style="background: #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #facc15;">
-            <strong>🔑 Chave API:</strong>
-            <input type="password" id="key" placeholder="Cole sua chave AQ aqui..." style="width: 60%; margin: 0 10px; padding: 5px;">
-            <button onclick="conectar()" style="padding: 5px 15px;">CONECTAR</button>
+        <div class="config">
+            <strong>Chave API:</strong>
+            <input type="password" id="key" placeholder="Cole sua chave aqui..." style="width: 50%;">
+            <button onclick="ativarIA()">CONECTAR MOTOR</button>
+            <div id="status">Status: Aguardando ativação...</div>
         </div>
-
-        <div id="status" class="status">Motor Offline</div>
-
         <div class="chat-box" id="chat">
-            <div class="msg ia">Olá! Cole sua chave acima para ativar as ferramentas Craft (Vector, PDF, Word, etc.).</div>
+            <div class="msg ia">Olá! Insira sua chave acima. Eu vou buscar automaticamente o melhor modelo (Gemini) disponível na sua conta para liberar as skills Craft.</div>
         </div>
-
-        <div class="input-area">
-            <input type="text" id="userInput" placeholder="O que vamos fazer hoje?">
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="userInput" placeholder="O que vamos fazer?" style="flex: 1;">
             <button onclick="enviar()">ENVIAR</button>
         </div>
     </div>
 
     <script>
-        let MINHA_CHAVE = "";
-        const CONTEXTO = "Você é o PapelPrint AI, especialista em Vectorcraft, PDFcraft, Wordcraft e design gráfico. Responda de forma técnica.";
+        let API_KEY = "";
+        let MODELO_URL = "";
+        const CONTEXTO = "Você é o PapelPrint AI, mestre em Vectorcraft, PDFcraft, Wordcraft e os outros 18 repositórios. Responda tecnicamente.";
 
-        function conectar() {
-            MINHA_CHAVE = document.getElementById('key').value.trim();
-            if(MINHA_CHAVE) {
-                document.getElementById('status').innerText = "Motor Gemini 1.5 Flash Conectado";
-                document.getElementById('status').style.color = "#22c55e";
-                addMsg("ia", "Conexão estabelecida! O monstro saiu da jaula. Como posso ajudar?");
+        async function ativarIA() {
+            API_KEY = document.getElementById('key').value.trim();
+            const status = document.getElementById('status');
+            status.innerText = "Buscando modelos compatíveis na sua conta...";
+
+            try {
+                // Pergunta ao Google quais modelos essa chave AQ pode usar
+                const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`);
+                const d = await r.json();
+
+                if (d.models && d.models.length > 0) {
+                    // Tenta achar o Flash, se não achar, pega o primeiro da lista
+                    const m = d.models.find(mod => mod.name.includes("1.5-flash")) || d.models[0];
+                    // MODELO_URL já vem com "models/nome-do-modelo"
+                    MODELO_URL = `https://generativelanguage.googleapis.com/v1beta/${m.name}:generateContent?key=${API_KEY}`;
+                    
+                    status.innerText = "Motor conectado: " + m.name;
+                    status.style.color = "#22c55e";
+                    addMsg("ia", "O monstro saiu da jaula! Conectado via " + m.name + ". Como posso ajudar com seus 21 repositórios?");
+                } else {
+                    status.innerText = "Erro: Nenhum modelo encontrado para esta chave.";
+                }
+            } catch (e) {
+                status.innerText = "Erro de conexão. Verifique a chave.";
             }
         }
 
         function addMsg(t, txt) {
-            const chat = document.getElementById('chat');
-            const div = document.createElement('div');
-            div.className = `msg ${t}`;
-            div.innerText = txt;
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
+            const c = document.getElementById('chat');
+            const d = document.createElement('div');
+            d.className = "msg " + t;
+            d.innerText = txt;
+            c.appendChild(d);
+            c.scrollTop = c.scrollHeight;
         }
 
         async function enviar() {
-            const input = document.getElementById('userInput');
-            const p = input.value;
-            if(!p || !MINHA_CHAVE) return;
+            const ui = document.getElementById('userInput');
+            const p = ui.value;
+            if (!p || !MODELO_URL) return;
 
             addMsg("user", p);
-            input.value = "";
-            document.getElementById('status').innerText = "Processando skills...";
+            ui.value = "";
+            document.getElementById('status').innerText = "IA pensando...";
 
             try {
-                // Forçando o modelo 1.5-flash que é o padrão gratuito e estável
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${MINHA_CHAVE}`;
-                
-                const response = await fetch(url, {
+                const response = await fetch(MODELO_URL, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: CONTEXTO + "\n\nPergunta do Usuário: " + p }] }]
-                    })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: CONTEXTO + "\n\nPergunta: " + p }] }] })
                 });
 
                 const data = await response.json();
-
-                if (data.candidates && data.candidates[0].content) {
-                    addMsg("ia", data.candidates[0].content.parts[0].text);
-                    document.getElementById('status').innerText = "Pronto.";
+                
+                // Leitura super segura da resposta para evitar erro de "undefined"
+                if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                    const resposta = data.candidates[0].content.parts[0].text;
+                    addMsg("ia", resposta);
+                    document.getElementById('status').innerText = "Motor Online";
                 } else {
-                    addMsg("ia", "Erro na resposta: " + (data.error ? data.error.message : "Resposta vazia do Google"));
+                    const erroMsg = data.error ? data.error.message : "Erro desconhecido na resposta.";
+                    addMsg("ia", "Lamento, houve um problema: " + erroMsg);
                 }
             } catch (e) {
-                addMsg("ia", "Erro de conexão: " + e.message);
+                addMsg("ia", "Erro técnico: " + e.message);
             }
         }
     </script>
