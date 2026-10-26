@@ -2,51 +2,62 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>PapelPrint AI - Final</title>
+    <title>PapelPrint AI - Oficial</title>
     <style>
-        body { background: #0b1020; color: white; font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; height: 95vh; }
-        .container { max-width: 800px; margin: auto; width: 100%; display: flex; flex-direction: column; flex-grow: 1; }
+        body { background: #0b1020; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; height: 95vh; }
+        .container { max-width: 900px; margin: auto; width: 100%; display: flex; flex-grow: 1; flex-direction: column; }
         .chat-box { background: #151c30; flex-grow: 1; border-radius: 12px; padding: 20px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #29354f; }
-        .msg { margin-bottom: 15px; padding: 15px; border-radius: 10px; line-height: 1.5; white-space: pre-wrap; }
-        .ia { background: #29354f; border-left: 4px solid #facc15; }
-        .user { background: #2563eb; margin-left: 50px; }
-        .config { background: #1e293b; padding: 15px; border-radius: 10px; border: 1px solid #facc15; margin-bottom: 10px; }
-        input { padding: 12px; border-radius: 5px; border: 1px solid #29354f; background: #0b1020; color: white; }
-        button { background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        #status { font-size: 12px; margin-top: 10px; color: #facc15; }
+        .msg { margin-bottom: 15px; padding: 15px; border-radius: 10px; line-height: 1.6; white-space: pre-wrap; }
+        .ia { background: #29354f; border-left: 5px solid #facc15; color: #e2e8f0; }
+        .user { background: #2563eb; margin-left: 50px; color: white; }
+        .config { background: #1e293b; padding: 15px; border-radius: 10px; border: 1px solid #facc15; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        input[type="password"], input[type="text"] { padding: 12px; border-radius: 6px; border: 1px solid #29354f; background: #0b1020; color: white; }
+        button { background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        #status { font-size: 12px; color: #facc15; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🧠 PapelPrint AI</h1>
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h1 style="margin:0;">🧠 PapelPrint AI</h1>
+            <div id="status">Status: Aguardando Chave AIza...</div>
+        </header>
+
         <div class="config">
-            <strong>🔑 Chave API:</strong>
-            <input type="password" id="key" placeholder="Cole a chave AQ aqui..." style="width: 50%;">
-            <button onclick="conectar()">CONECTAR</button>
-            <div id="status">Status: Aguardando chave...</div>
+            <strong>Chave API:</strong>
+            <input type="password" id="key" placeholder="Cole a chave AIzaSy... aqui" style="flex:1;">
+            <button onclick="conectar()">ATIVAR MOTOR</button>
         </div>
+
         <div class="chat-box" id="chat">
-            <div class="msg ia">Olá! O Google está sugerindo modelos que não existem (3.8). Este código vai forçar o uso dos modelos reais (1.5). Cole a chave e vamos testar!</div>
+            <div class="msg ia">Olá! Agora que você tem a chave <b>AIza</b>, basta ativá-la acima. 
+
+Eu integrarei as habilidades do Vectorcraft, PDFcraft, Wordcraft e todos os outros 18 repositórios para te ajudar.</div>
         </div>
+
         <div style="display: flex; gap: 10px;">
-            <input type="text" id="userInput" placeholder="O que vamos fazer?">
+            <input type="text" id="userInput" placeholder="O que vamos imprimir ou criar hoje?" style="flex: 1;">
             <button onclick="enviar()">ENVIAR</button>
         </div>
     </div>
 
     <script>
         let API_KEY = "";
-        // LISTA DE MODELOS QUE REALMENTE EXISTEM (O 2.5 e 3.8 SÃO FAKES DO GOOGLE)
-        const MODELOS_REAIS = ["gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro"];
-        
-        const CONTEXTO = "Você é o PapelPrint AI, especialista em Vectorcraft, PDFcraft, Wordcraft e design gráfico. Responda de forma técnica.";
+        const CONTEXTO = `Você é o PapelPrint AI. Suas habilidades vêm de 21 repositórios do GitHub:
+        - Design: Vectorcraft (SVG/Sangria), Designcraft, Figcraft, Gridcraft.
+        - Produção: PDFcraft (Unir/Preflight), Wordcraft (Timbrados), Photocraft.
+        - Automação: Vibe Toolkit, OmniRoute.
+        Responda como um especialista técnico nessas ferramentas.`;
 
         function conectar() {
-            API_KEY = document.getElementById('key').value.trim();
-            if(API_KEY) {
-                document.getElementById('status').innerText = "IA Pronta. Pronto para forçar modelos reais.";
+            const k = document.getElementById('key').value.trim();
+            if (k.startsWith("AIza")) {
+                API_KEY = k;
+                document.getElementById('status').innerText = "✅ Motor Gemini Conectado!";
                 document.getElementById('status').style.color = "#22c55e";
-                addMsg("ia", "Chave conectada. Vou ignorar as sugestões doidas do Google e usar o Gemini 1.5 Real.");
+                addMsg("ia", "Motor ativado com sucesso! O monstro saiu da jaula. Como posso ajudar com seus repositórios?");
+            } else {
+                alert("A chave ainda não começa com AIza. Verifique a cópia no Google Studio.");
             }
         }
 
@@ -59,26 +70,6 @@
             c.scrollTop = c.scrollHeight;
         }
 
-        async function tentarModelos(prompt) {
-            for (let modelo of MODELOS_REAIS) {
-                console.log("Tentando modelo: " + modelo);
-                try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${API_KEY}`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ contents: [{ parts: [{ text: CONTEXTO + "\n\nPergunta: " + prompt }] }] })
-                    });
-                    const data = await response.json();
-                    if (data.candidates && data.candidates[0].content) {
-                        return data.candidates[0].content.parts[0].text;
-                    }
-                } catch (e) {
-                    console.error("Falhou com " + modelo);
-                }
-            }
-            throw new Error("O Google bloqueou todos os modelos reais para esta chave.");
-        }
-
         async function enviar() {
             const ui = document.getElementById('userInput');
             const p = ui.value;
@@ -86,14 +77,28 @@
 
             addMsg("user", p);
             ui.value = "";
-            document.getElementById('status').innerText = "Forçando resposta do motor real...";
+            document.getElementById('status').innerText = "IA pensando...";
 
             try {
-                const resposta = await tentarModelos(p);
-                addMsg("ia", resposta);
-                document.getElementById('status').innerText = "Online";
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: CONTEXTO + "\n\nUsuário: " + p }] }]
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.candidates && data.candidates[0].content) {
+                    addMsg("ia", data.candidates[0].content.parts[0].text);
+                    document.getElementById('status').innerText = "✅ Online";
+                } else {
+                    const msgErro = data.error ? data.error.message : "Erro na permissão da chave.";
+                    addMsg("ia", "Ops! Verifique se você ativou a 'Generative Language API' nas restrições da chave no Google Cloud. Erro: " + msgErro);
+                }
             } catch (e) {
-                addMsg("ia", "Erro Final: O Google insiste que sua chave não pode usar modelos 1.5. Tente criar uma NOVA CHAVE no AI Studio em outro 'Project'.");
+                addMsg("ia", "Erro técnico: " + e.message);
             }
         }
     </script>
