@@ -27,19 +27,19 @@
         </header>
         
         <div class="key-area">
-            <strong>⚠️ Ativação:</strong> Cole sua chave (mesmo se começar com AQ) e clique em Conectar.
+            <strong>🔑 Ativação Final:</strong> Cole sua chave e clique em Conectar.
             <div style="margin-top:10px;">
                 <input type="password" id="apiKey" placeholder="Cole sua chave aqui..." style="width: 70%;">
-                <button onclick="saveKey()">Conectar IA</button>
+                <button onclick="saveKey()">Conectar</button>
             </div>
         </div>
 
         <div class="chat-box" id="chat">
-            <div class="msg ia">Olá! Estou pronto para ser ativado. Cole sua chave acima para liberarmos as habilidades dos seus repositórios (Vectorcraft, PDFcraft, etc.).</div>
+            <div class="msg ia">Ajustei a conexão! Por favor, cole a chave novamente para iniciarmos.</div>
         </div>
 
         <div class="input-area">
-            <input type="text" id="userInput" placeholder="O que vamos fazer hoje?">
+            <input type="text" id="userInput" placeholder="Digite seu pedido...">
             <button onclick="askIA()">Enviar</button>
         </div>
         <div id="debugLog" style="font-size: 11px; color: #facc15; margin-top: 5px;"></div>
@@ -48,19 +48,19 @@
     <script>
         let API_KEY = "";
         
-        const SKILLS_CONTEXT = `Você é o PapelPrint AI. Você é um especialista em artes gráficas e automação.
-        Habilidades integradas:
-        - Vectorcraft: Artes vetoriais e SVG.
-        - PDFcraft: Manipulação e Preflight de PDF.
-        - Wordcraft: Timbrados e documentos.
-        Responda de forma profissional e direta.`;
+        const SKILLS_CONTEXT = `Você é o PapelPrint AI. Um assistente especializado em design e impressão.
+        Habilidades:
+        - Vectorcraft: Artes vetoriais/SVG/Sangrias.
+        - PDFcraft: Unir e conferir PDFs.
+        - Wordcraft: Papel timbrado e documentos.
+        Responda de forma curta e técnica.`;
 
         function saveKey() {
             API_KEY = document.getElementById('apiKey').value.trim();
             if (API_KEY) {
                 document.getElementById('status-badge').innerText = "MOTOR PRONTO";
                 document.getElementById('status-badge').className = "status-ready";
-                addMsg("ia", "Conexão estabelecida! O motor está aquecido. Pode mandar seu pedido.");
+                addMsg("ia", "Chave conectada. Pode testar o chat agora!");
             }
         }
 
@@ -76,38 +76,40 @@
         async function askIA() {
             const inputField = document.getElementById('userInput');
             const prompt = inputField.value;
-            if (!prompt || !API_KEY) return alert("Por favor, conecte a chave primeiro!");
+            if (!prompt || !API_KEY) return alert("Conecte a chave primeiro!");
 
             addMsg("user", prompt);
             inputField.value = "";
             const log = document.getElementById('debugLog');
-            log.innerText = "IA está processando as ferramentas Craft...";
+            log.innerText = "IA processando habilidades...";
 
             try {
-                // Versão v1beta - Aceita chaves novas (AQ) e antigas (AIza)
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+                // Rota estável v1 que funciona melhor com chaves novas
+                const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
                 
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: SKILLS_CONTEXT + "\n\nPedido do usuário: " + prompt }] }]
+                        contents: [{ parts: [{ text: SKILLS_CONTEXT + "\n\nUsuário: " + prompt }] }]
                     })
                 });
 
                 const data = await response.json();
                 
                 if (data.error) {
-                    addMsg("ia", "Ocorreu um problema com a chave: " + data.error.message);
-                    log.innerText = "Erro: " + data.error.status;
-                } else {
+                    addMsg("ia", "Erro técnico: " + data.error.message);
+                    log.innerText = "Status: " + data.error.code;
+                } else if (data.candidates && data.candidates[0].content) {
                     const reply = data.candidates[0].content.parts[0].text;
                     addMsg("ia", reply);
-                    log.innerText = "Resposta gerada com sucesso.";
+                    log.innerText = "Resposta ok.";
+                } else {
+                    addMsg("ia", "A IA não conseguiu gerar uma resposta. Tente outro pedido.");
                 }
             } catch (error) {
-                addMsg("ia", "Erro técnico de conexão. Tente desativar extensões de bloqueio de anúncio.");
-                log.innerText = "Erro: " + error.message;
+                addMsg("ia", "Erro de conexão. Verifique se há algum bloqueador de anúncios ativo.");
+                log.innerText = error.message;
             }
         }
     </script>
