@@ -2,57 +2,59 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>PapelPrint AI - Sistema Operacional</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PapelPrint AI - Oficial</title>
     <style>
-        body { background: #050a18; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        .container { max-width: 1000px; margin: auto; width: 95%; display: flex; flex-direction: column; height: 90vh; }
-        .header { padding: 20px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; }
-        .chat-box { flex-grow: 1; background: #0f172a; border-radius: 12px; padding: 20px; overflow-y: auto; margin: 20px 0; border: 1px solid #1e293b; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .msg { margin-bottom: 15px; padding: 15px; border-radius: 10px; max-width: 85%; line-height: 1.6; }
-        .ia { background: #1e293b; color: #facc15; align-self: flex-start; border-left: 4px solid #facc15; }
-        .user { background: #2563eb; color: white; align-self: flex-end; margin-left: auto; }
-        .input-area { display: flex; gap: 10px; background: #1e293b; padding: 15px; border-radius: 12px; }
-        input { background: #0f172a; border: 1px solid #334155; color: white; padding: 12px; border-radius: 6px; outline: none; }
-        button { background: #facc15; color: #0f172a; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        body { background: #0b1020; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; height: 95vh; }
+        .container { max-width: 900px; margin: auto; width: 100%; display: flex; flex-grow: 1; flex-direction: column; }
+        .chat-box { background: #151c30; flex-grow: 1; border-radius: 12px; padding: 20px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #29354f; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .msg { margin-bottom: 15px; padding: 15px; border-radius: 10px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; }
+        .ia { background: #29354f; border-left: 5px solid #facc15; color: #e2e8f0; }
+        .user { background: #2563eb; margin-left: 50px; color: white; border-right: 5px solid #60a5fa; }
+        .config-bar { background: #1e293b; padding: 15px; border-radius: 10px; border: 1px solid #facc15; margin-bottom: 15px; display: flex; gap: 10px; align-items: center; }
+        input[type="password"] { flex: 1; padding: 12px; border-radius: 6px; border: 1px solid #29354f; background: #0b1020; color: white; }
+        input[type="text"] { flex: 1; padding: 12px; border-radius: 6px; border: 1px solid #29354f; background: #1e293b; color: white; }
+        button { background: #facc15; color: #0b1020; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         button:hover { background: #eab308; }
-        #status { font-size: 12px; font-weight: bold; }
+        #status { font-size: 12px; color: #facc15; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🧠 PapelPrint AI</h1>
-            <div id="status" style="color: #ef4444;">🔴 DESCONECTADO</div>
-        </div>
 
-        <div class="input-area" style="margin-bottom: 10px;">
-            <input type="password" id="key" placeholder="Cole sua chave AIzaSy aqui..." style="flex: 1;">
+    <div class="container">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h1 style="margin:0; font-size: 24px;">🧠 PapelPrint AI</h1>
+            <div id="status">Status: Aguardando Chave AIza...</div>
+        </header>
+
+        <div class="config-bar">
+            <input type="password" id="apiKey" placeholder="Cole sua chave AIzaSy aqui...">
             <button onclick="conectar()">CONECTAR MOTOR</button>
         </div>
 
         <div class="chat-box" id="chat">
-            <div class="msg ia">Sistema resetado. Por favor, insira sua Chave Gemini (AIza) para carregar os 21 repositórios.</div>
+            <div class="msg ia">Sistema Pronto. Conecte sua chave para ativar as habilidades dos 21 repositórios (Vectorcraft, PDFcraft, etc).</div>
         </div>
 
-        <div class="input-area">
-            <input type="text" id="userInput" placeholder="Digite sua ordem aqui..." style="flex: 1;" onkeypress="if(event.key==='Enter') enviar()">
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="userInput" placeholder="O que vamos criar agora?" onkeypress="if(event.key==='Enter') enviar()">
             <button onclick="enviar()">ENVIAR</button>
         </div>
     </div>
 
     <script>
-        let API_KEY = "";
-        const PROMPT_SISTEMA = "Você é o PapelPrint AI. Você tem o conhecimento técnico de 21 repositórios: Vectorcraft, PDFcraft, Wordcraft, Lightcraft, Effectcraft, Filmcraft, Designcraft, Figcraft, Gridcraft, CADcraft, Photocraft, Soundcraft, Deckcraft, OpenMAIC, OmniRoute, Vibe Toolkit, Claude-mem, Headroom, OpenClaude, MonkeyCode, MiniMind. Responda de forma técnica e prestativa.";
+        let CHAVE_MESTRA = "";
+        const CONTEXTO = "Você é o PapelPrint AI. Você domina 21 ferramentas: Vectorcraft, PDFcraft, Wordcraft, Lightcraft, Effectcraft, Filmcraft, Designcraft, Figcraft, Gridcraft, CADcraft, Photocraft, Soundcraft, Deckcraft, OpenMAIC, OmniRoute, Vibe Toolkit, Claude-mem, Headroom, OpenClaude, MonkeyCode, MiniMind. Responda de forma técnica, rápida e em português.";
 
         function conectar() {
-            const k = document.getElementById('key').value.trim();
+            const k = document.getElementById('apiKey').value.trim();
             if (k.startsWith("AIza")) {
-                API_KEY = k;
-                document.getElementById('status').innerText = "🟢 MOTOR ATIVO";
+                CHAVE_MESTRA = k;
+                document.getElementById('status').innerText = "✅ MOTOR CONECTADO";
                 document.getElementById('status').style.color = "#22c55e";
-                addMsg("ia", "Motor Gemini detectado e ativo! Habilidades dos 21 repositórios carregadas.");
+                addMsg("ia", "Motor ativado com sucesso! Como posso ajudar com seus repositórios hoje?");
             } else {
-                alert("Erro: A chave deve começar com AIzaSy.");
+                alert("A chave deve começar com AIza. Verifique se copiou corretamente.");
             }
         }
 
@@ -67,26 +69,45 @@
 
         async function enviar() {
             const input = document.getElementById('userInput');
-            const texto = input.value;
-            if (!texto || !API_KEY) return;
+            const texto = input.value.trim();
+            
+            if (!texto || !CHAVE_MESTRA) {
+                if(!CHAVE_MESTRA) alert("Por favor, conecte a chave primeiro!");
+                return;
+            }
 
             addMsg("user", texto);
             input.value = "";
+            document.getElementById('status').innerText = "IA Processando...";
 
             try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                // ENDPOINT ATUALIZADO V1BETA
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${CHAVE_MESTRA}`;
+                
+                const response = await fetch(url, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ contents: [{ parts: [{ text: PROMPT_SISTEMA + "\n\nUsuário: " + texto }] }] })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: CONTEXTO + "\n\nUsuário: " + texto }]
+                        }]
+                    })
                 });
-                const data = await res.json();
-                if (data.candidates) {
-                    addMsg("ia", data.candidates[0].content.parts[0].text);
+
+                const data = await response.json();
+
+                if (data.candidates && data.candidates[0].content) {
+                    const respostaIA = data.candidates[0].content.parts[0].text;
+                    addMsg("ia", respostaIA);
+                    document.getElementById('status').innerText = "✅ Online";
                 } else {
-                    addMsg("ia", "Erro na API: " + JSON.stringify(data.error.message));
+                    const erro = data.error ? data.error.message : "Erro desconhecido";
+                    addMsg("ia", "Erro na API: " + erro);
+                    document.getElementById('status').innerText = "❌ Erro";
                 }
             } catch (e) {
-                addMsg("ia", "Erro de conexão: " + e.message);
+                addMsg("ia", "Erro de Conexão: " + e.message);
+                document.getElementById('status').innerText = "❌ Offline";
             }
         }
     </script>
