@@ -1,108 +1,175 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PapelPrint AI - Oficial V5</title>
-    <style>
-        body { background: #0b1020; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; height: 95vh; }
-        .container { max-width: 900px; margin: auto; width: 100%; display: flex; flex-grow: 1; flex-direction: column; }
-        .chat-box { background: #151c30; flex-grow: 1; border-radius: 12px; padding: 20px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #29354f; }
-        .msg { margin-bottom: 15px; padding: 15px; border-radius: 10px; line-height: 1.6; white-space: pre-wrap; }
-        .ia { background: #29354f; border-left: 5px solid #facc15; color: #e2e8f0; }
-        .user { background: #2563eb; color: white; margin-left: 50px; }
-        .config-bar { background: #1e293b; padding: 15px; border-radius: 10px; border: 1px solid #facc15; margin-bottom: 15px; display: flex; gap: 10px; }
-        input { flex: 1; padding: 12px; border-radius: 6px; border: 1px solid #29354f; background: #0b1020; color: white; }
-        button { background: #facc15; color: #0b1020; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        #status { font-size: 12px; color: #facc15; font-weight: bold; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PapelPrint AI</title>
+<style>
+  :root{--bg:#f6f5f2;--card:#fff;--ink:#1d1d1b;--mute:#6b6b66;--line:#dcdad3;--acc:#0b5fff;--user:#e8efff;--bot:#fff}
+  @media (prefers-color-scheme:dark){:root{--bg:#161614;--card:#201f1d;--ink:#eeede8;--mute:#9a9992;--line:#38372f;--acc:#6b9bff;--user:#1f2a44;--bot:#201f1d}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,Segoe UI,Arial,sans-serif;display:flex;flex-direction:column;min-height:100vh}
+  header{padding:14px 16px;border-bottom:1px solid var(--line);background:var(--card)}
+  h1{margin:0;font-size:18px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  input,select,textarea,button{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+  input[type=password]{flex:1 1 220px;min-width:0}
+  select{flex:1 1 200px;min-width:0}
+  button{cursor:pointer;background:var(--acc);color:#fff;border-color:var(--acc)}
+  button.sec{background:var(--card);color:var(--ink);border-color:var(--line)}
+  button:disabled{opacity:.5;cursor:default}
+  #status{font-size:13px;color:var(--mute);margin-top:8px;min-height:1.3em}
+  #status.err{color:#c62828}
+  main{flex:1;width:100%;max-width:860px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+  .msg{padding:10px 12px;border-radius:10px;border:1px solid var(--line);white-space:pre-wrap;word-wrap:break-word}
+  .msg.user{background:var(--user);align-self:flex-end;max-width:90%}
+  .msg.bot{background:var(--bot);align-self:flex-start;max-width:100%}
+  .msg.err{border-color:#c62828;color:#c62828}
+  footer{position:sticky;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:12px 16px}
+  .row{max-width:860px;margin:0 auto;display:flex;gap:8px}
+  #q{flex:1;resize:none;min-height:44px;max-height:160px}
+  details{max-width:860px;margin:0 auto;padding:0 16px 10px;width:100%}
+  summary{cursor:pointer;color:var(--mute);font-size:14px}
+  #sys{width:100%;min-height:200px;margin-top:8px}
+  .note{font-size:13px;color:var(--mute)}
+</style>
 </head>
 <body>
+<header>
+  <h1>PapelPrint AI</h1>
+  <div class="bar">
+    <input id="key" type="password" autocomplete="off" placeholder="Cole sua chave da Groq (gsk_...)">
+    <button id="connect">Conectar</button>
+    <select id="model" disabled><option>Conecte para listar os modelos</option></select>
+    <button id="clear" class="sec">Limpar conversa</button>
+  </div>
+  <div id="status">A chave fica só na memória desta aba e vai direto para a Groq. Nunca a escreva no código nem no GitHub.</div>
+</header>
 
-    <div class="container">
-        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h1>🧠 PapelPrint AI</h1>
-            <div id="status">Status: Pronto</div>
-        </header>
+<details>
+  <summary>Instruções do sistema (editáveis)</summary>
+  <textarea id="sys"></textarea>
+</details>
 
-        <div class="config-bar">
-            <input type="password" id="apiKey" placeholder="Cole sua chave gsk_ aqui...">
-            <button onclick="conectar()">ATIVAR MOTOR</button>
-        </div>
+<main id="log"></main>
 
-        <div class="chat-box" id="chat">
-            <div class="msg ia">Habilidades dos 21 Repositórios carregadas. Insira sua chave Groq.</div>
-        </div>
+<footer>
+  <div class="row">
+    <textarea id="q" rows="1" placeholder="Escreva sua mensagem (Enter envia, Shift+Enter quebra a linha)" disabled></textarea>
+    <button id="send" disabled>Enviar</button>
+  </div>
+</footer>
 
-        <div style="display: flex; gap: 10px;">
-            <input type="text" id="userInput" placeholder="O que vamos fazer?" onkeypress="if(event.key==='Enter') enviar()">
-            <button onclick="enviar()">ENVIAR</button>
-        </div>
-    </div>
+<script>
+(function(){
+  var API = "https://api.groq.com/openai/v1";
+  var DEFAULT_SYSTEM = [
+    "Você é o PapelPrint AI, assistente de uma gráfica (cartões, pastas, envelopes e timbrados) e de explicações para provas e concursos. Responda em português do Brasil, direto e prático, sem elogios exagerados.",
+    "",
+    "Regras de trabalho:",
+    "- Preserve literalmente dados, textos, cores e identidade visual de clientes.",
+    "- Separe sempre: VERIFICADO, HIPÓTESE e DEPENDE DE INSTALAÇÃO. Nunca diga que executou, testou ou leu algo que não fez.",
+    "- Você é um chat de texto: não executa programas, não abre links e não gera PDFs. Diga isso quando pedirem.",
+    "- PDF estruturalmente válido não é PDF pronto para gráfica. Sangria, resolução, perfil ICC, PDF/X e fidelidade visual precisam de verificação própria.",
+    "- Em conteúdo de prova e concurso, cite a fonte (lei, artigo, edital) e marque o que não puder confirmar.",
+    "",
+    "Conhecimento verificado por leitura de código (nada foi compilado nem executado):",
+    "- Família storytold/*craft (vectorcraft, designcraft, pdfcraft, photocraft, lightcraft, wordcraft, effectcraft, filmcraft, figcraft, gridcraft, cadcraft, soundcraft, deckcraft): aplicativos nativos em Rust, licença MIT ou Apache-2.0, cada um com CLI e servidor MCP. NÃO são skills. Estão em alfa ou pré-alfa e precisam ser compilados (Rust 1.95+). A marca ArtCraft não é coberta pela licença.",
+    "- VectorCraft: editor vetorial; o código tem exportação de PDF com sangria, marcas de corte, CMYK e variantes de PDF/X. Em alfa; não comprovado por teste.",
+    "- DesignCraft: diagramação multipágina em pré-alfa; a exportação para impressão ainda está incompleta.",
+    "- PdfCraft: ferramenta de PDF. O módulo de preflight verifica PDF/A, não PDF/X nem critérios de gráfica. A comparação é de texto. Faz imposição (livreto, pôster).",
+    "- OpenMAIC: aulas com vários agentes (slides, quizzes, narração), foco útil para explicações de provas.",
+    "- OpenClaude: derivado de código proprietário sem autorização de distribuição; evitar.",
+    "- OmniRoute: gateway de IA com vários provedores. Claude-mem e Headroom: ferramentas para o Claude Code. MonkeyCode: AGPL-3.0. MiniMind: treino de modelo pequeno. Vibe Coding Toolkit: guias e prompts.",
+    "Se faltar informação para responder, diga que não sabe em vez de inventar."
+  ].join("\n");
 
-    <script>
-        let CHAVE_ATIVA = "";
-        const CONTEXTO = "Você é o PapelPrint AI. Mestre em 21 repositórios: Vectorcraft, PDFcraft, Wordcraft, Lightcraft, Effectcraft, Filmcraft, Designcraft, Figcraft, Gridcraft, CADcraft, Photocraft, Soundcraft, Deckcraft, OpenMAIC, OmniRoute, Vibe Toolkit, Claude-mem, Headroom, OpenClaude, MonkeyCode, MiniMind.";
+  var $ = function(id){return document.getElementById(id)};
+  var keyEl=$("key"), modelEl=$("model"), statusEl=$("status"), logEl=$("log"), qEl=$("q"), sendEl=$("send"), sysEl=$("sys"), connEl=$("connect");
+  var history = [];
+  var apiKey = "";
+  sysEl.value = DEFAULT_SYSTEM;
 
-        function conectar() {
-            const k = document.getElementById('apiKey').value.trim();
-            if (k.startsWith("gsk_")) {
-                CHAVE_ATIVA = k;
-                document.getElementById('status').innerText = "✅ MOTOR LIGADO (LLAMA 8B)";
-                document.getElementById('status').style.color = "#22c55e";
-                addMsg("ia", "Motor conectado com sucesso! O modelo 8B Instant está ativo.");
-            } else {
-                alert("A chave deve começar com gsk_");
-            }
-        }
+  function setStatus(t, err){ statusEl.textContent = t; statusEl.className = err ? "err" : ""; }
+  function add(role, text, isErr){
+    var d = document.createElement("div");
+    d.className = "msg " + role + (isErr ? " err" : "");
+    d.textContent = text;
+    logEl.appendChild(d);
+    window.scrollTo(0, document.body.scrollHeight);
+    return d;
+  }
+  function errText(status, body){
+    var m = "";
+    try { m = JSON.parse(body).error.message; } catch(e){ m = (body||"").slice(0,300); }
+    return "Erro " + status + ": " + m;
+  }
+  // Modelos que não servem para chat
+  function isChat(id){ return !/whisper|guard|tts|playai|orpheus|embed|distil-whisper|prompt-guard|safeguard/i.test(id); }
+  // Preferência: modelos maiores e mais novos primeiro
+  function rank(id){
+    var s = 0;
+    if (/70b|120b|405b|maverick|scout|kimi|qwen3-32b|gpt-oss/i.test(id)) s += 10;
+    if (/versatile/i.test(id)) s += 3;
+    if (/8b|instant/i.test(id)) s += 1;
+    return -s;
+  }
 
-        function addMsg(tipo, texto) {
-            const chat = document.getElementById('chat');
-            const div = document.createElement('div');
-            div.className = "msg " + tipo;
-            div.innerText = texto;
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
-        }
+  async function connect(){
+    apiKey = keyEl.value.trim();
+    if (!/^gsk_/.test(apiKey)) { setStatus("A chave da Groq começa com gsk_. Confira o que você colou.", true); return; }
+    connEl.disabled = true; setStatus("Conectando e listando os modelos disponíveis para a sua chave...");
+    try {
+      var r = await fetch(API + "/models", { headers: { "Authorization": "Bearer " + apiKey } });
+      var body = await r.text();
+      if (!r.ok) { setStatus(errText(r.status, body), true); apiKey = ""; return; }
+      var list = JSON.parse(body).data.map(function(m){return m.id}).filter(isChat).sort(function(a,b){return rank(a)-rank(b) || a.localeCompare(b)});
+      if (!list.length) { setStatus("A chave funcionou, mas nenhum modelo de chat foi listado.", true); return; }
+      modelEl.innerHTML = "";
+      list.forEach(function(id){ var o=document.createElement("option"); o.value=id; o.textContent=id; modelEl.appendChild(o); });
+      modelEl.disabled = false; qEl.disabled = false; sendEl.disabled = false;
+      keyEl.value = "";  // limpa o campo; a chave fica só em memória
+      setStatus("Conectado. " + list.length + " modelos de chat disponíveis para esta chave. Escolha um e escreva.");
+    } catch(e){
+      setStatus("Falha de rede ou bloqueio do navegador (CORS): " + e.message, true);
+    } finally { connEl.disabled = false; }
+  }
 
-        async function enviar() {
-            const input = document.getElementById('userInput');
-            const texto = input.value.trim();
-            if (!texto || !CHAVE_ATIVA) return;
+  async function send(){
+    var text = qEl.value.trim();
+    if (!text || !apiKey) return;
+    qEl.value = ""; sendEl.disabled = true;
+    add("user", text);
+    history.push({role:"user", content:text});
+    var wait = add("bot", "...");
+    var msgs = [{role:"system", content: sysEl.value}].concat(history);
+    try {
+      var r = await fetch(API + "/chat/completions", {
+        method:"POST",
+        headers:{ "Authorization":"Bearer " + apiKey, "Content-Type":"application/json" },
+        body: JSON.stringify({ model: modelEl.value, messages: msgs, temperature: 0.3 })
+      });
+      var body = await r.text();
+      if (!r.ok) {
+        wait.textContent = errText(r.status, body) + "\nSe o modelo não existir para a sua chave, escolha outro na lista.";
+        wait.className = "msg bot err";
+        history.pop();
+      } else {
+        var out = JSON.parse(body).choices[0].message.content || "";
+        wait.textContent = out;
+        history.push({role:"assistant", content: out});
+      }
+    } catch(e){
+      wait.textContent = "Falha de rede: " + e.message; wait.className = "msg bot err"; history.pop();
+    } finally { sendEl.disabled = false; qEl.focus(); }
+  }
 
-            addMsg("user", texto);
-            input.value = "";
-            document.getElementById('status').innerText = "IA Pensando...";
-
-            try {
-                // Usando o modelo 'llama-3.1-8b-instant' que é o mais estável para chaves grátis
-                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${CHAVE_ATIVA}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: "llama-3.1-8b-instant",
-                        messages: [
-                            { role: "system", content: CONTEXTO },
-                            { role: "user", content: texto }
-                        ]
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (data.choices) {
-                    addMsg("ia", data.choices[0].message.content);
-                    document.getElementById('status').innerText = "✅ Online";
-                } else {
-                    addMsg("ia", "Erro técnico: " + (data.error ? data.error.message : "Tente novamente em instantes."));
-                }
-            } catch (e) {
-                addMsg("ia", "Erro de Conexão: " + e.message);
-            }
-        }
-    </script>
+  connEl.addEventListener("click", connect);
+  keyEl.addEventListener("keydown", function(e){ if(e.key==="Enter") connect(); });
+  sendEl.addEventListener("click", send);
+  qEl.addEventListener("keydown", function(e){ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); send(); } });
+  $("clear").addEventListener("click", function(){ history = []; logEl.innerHTML = ""; });
+})();
+</script>
 </body>
 </html>
