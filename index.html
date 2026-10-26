@@ -1,78 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>PapelPrint AI - Diagnóstico</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PapelPrint AI - Central Unificada</title>
+    <style>
+        body { background-color: #0b1020; color: white; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; height: 95vh; }
+        .container { max-width: 900px; margin: auto; width: 100%; display: flex; flex-direction: column; flex-grow: 1; }
+        .chat-box { background: #151c30; flex-grow: 1; border-radius: 12px; padding: 20px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #29354f; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        .input-area { display: flex; gap: 10px; }
+        input { flex: 1; padding: 15px; border-radius: 8px; border: 1px solid #29354f; background: #0b1020; color: white; outline: none; }
+        button { background: #2563eb; color: white; border: none; padding: 15px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #1d4ed8; }
+        .msg { margin-bottom: 15px; padding: 15px; border-radius: 12px; max-width: 85%; line-height: 1.6; white-space: pre-wrap; font-size: 15px; }
+        .ia { background: #29354f; align-self: flex-start; border-left: 5px solid #facc15; }
+        .user { background: #2563eb; margin-left: auto; border-right: 5px solid #3b82f6; }
+        .config-panel { background: #1e293b; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #facc15; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .badge-off { background: #ef4444; }
+        .badge-on { background: #22c55e; }
+    </style>
 </head>
-<body style="background: #000; color: #0f0; font-family: monospace; padding: 20px;">
-    <h1>🔍 DIAGNÓSTICO DE MOTOR PAPELPRINT AI</h1>
-    <p>Sua chave (AQ...) foi detectada. Vamos escanear quais habilidades o Google liberou para você.</p>
-    
-    <input type="password" id="key" placeholder="Cole a chave aqui" style="width: 80%; padding: 10px; margin-bottom: 10px;">
-    <br>
-    <button onclick="escanear()" style="padding: 10px 20px; cursor: pointer; background: #0f0; color: #000; font-weight: bold;">
-        ESCANEAR E INICIAR IA
-    </button>
-    
-    <div id="log" style="margin-top: 20px; border: 1px dashed #0f0; padding: 10px; font-size: 12px;">
-        Aguardando comando...
-    </div>
+<body>
+    <div class="container">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h1 style="margin:0;">🧠 PapelPrint AI</h1>
+            <span id="sttBadge" class="badge badge-off">Motor Desligado</span>
+        </header>
 
-    <div id="chat" style="margin-top: 20px; display: none;">
-        <hr>
-        <h3>💬 CHAT ATIVADO:</h3>
-        <input type="text" id="msg" style="width: 70%; padding: 10px;">
-        <button onclick="falar()">ENVIAR</button>
-        <div id="resIA" style="color: white; margin-top: 10px; background: #222; padding: 10px;"></div>
+        <div class="config-panel">
+            <strong>🔑 Ativação das Skills:</strong>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+                <input type="password" id="apiKey" placeholder="Cole sua chave AQ aqui..." style="padding:10px;">
+                <button onclick="bootSystem()">ATIVAR IA</button>
+            </div>
+            <div id="debug" style="font-size: 11px; color: #facc15; margin-top: 8px;">Aguardando chave...</div>
+        </div>
+
+        <div class="chat-box" id="chat">
+            <div class="msg ia">Olá! Sou o seu assistente PapelPrint AI. 
+
+Ative o motor acima para eu carregar as habilidades dos seus 21 repositórios (Vectorcraft, PDFcraft, Wordcraft, Filmcraft, etc.).</div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="O que vamos criar ou automatizar agora?">
+            <button onclick="sendMsg()">Enviar</button>
+        </div>
     </div>
 
     <script>
-        let chaveFinal = "";
-        let modeloFuncional = "";
+        let KEY = "";
+        let MODEL = "";
+        
+        const CONTEXT = `Você é o PapelPrint AI. Você é um especialista técnico em artes gráficas e automação.
+        Você tem integradas as habilidades dos seguintes repositórios do GitHub:
+        - DESIGN: Vectorcraft (SVG/Sangria), Designcraft, Figcraft, Gridcraft, CADcraft, Photocraft, Lightcraft.
+        - DOCUMENTOS: PDFcraft (Unir/Separar/Preflight), Wordcraft, Deckcraft.
+        - MÍDIA: Filmcraft, Soundcraft, OpenMAIC.
+        - IA: OmniRoute, Claude-mem, Headroom, Vibe Toolkit.
+        Responda de forma técnica e prestativa.`;
 
-        async function escanear() {
-            chaveFinal = document.getElementById('key').value.trim();
-            const log = document.getElementById('log');
-            log.innerHTML = "Escaneando modelos disponíveis para sua chave...<br>";
+        async function bootSystem() {
+            KEY = document.getElementById('apiKey').value.trim();
+            const debug = document.getElementById('debug');
+            if(!KEY) return alert("Cole a chave!");
 
+            debug.innerText = "Escaneando motor compatível...";
             try {
-                // Esse comando pergunta ao Google: "O que você deixa eu usar?"
-                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${chaveFinal}`);
-                const data = await resp.json();
-
-                if (data.models && data.models.length > 0) {
-                    log.innerHTML += "✅ Modelos encontrados!<br>";
-                    // Procura o melhor modelo disponível
-                    const flash = data.models.find(m => m.name.includes("flash"));
-                    const pro = data.models.find(m => m.name.includes("pro"));
-                    
-                    modeloFuncional = flash ? flash.name : (pro ? pro.name : data.models[0].name);
-                    
-                    log.innerHTML += `🚀 Usando motor: <b>${modeloFuncional}</b><br>`;
-                    document.getElementById('chat').style.display = "block";
-                    log.innerHTML += "<b>MONSTRO SAIU DA JAULA! Digite sua mensagem abaixo.</b>";
+                const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${KEY}`);
+                const d = await r.json();
+                if(d.models) {
+                    MODEL = d.models.find(m => m.name.includes("flash"))?.name || d.models[0].name;
+                    document.getElementById('sttBadge').innerText = "Motor Online";
+                    document.getElementById('sttBadge').className = "badge badge-on";
+                    debug.innerText = "Motor localizado: " + MODEL;
+                    addMsg("ia", "Habilidades carregadas! O monstro saiu da jaula. Como posso ajudar com seus projetos gráficos?");
                 } else {
-                    log.innerHTML += "❌ Nenhum modelo disponível. Erro: " + JSON.stringify(data.error);
+                    debug.innerText = "Erro na chave: " + (d.error?.message || "Invalida");
                 }
-            } catch (e) {
-                log.innerHTML += "❌ Erro de conexão: " + e.message;
-            }
+            } catch(e) { debug.innerText = "Erro de conexão."; }
         }
 
-        async function falar() {
-            const txt = document.getElementById('msg').value;
-            const resIA = document.getElementById('resIA');
-            resIA.innerText = "IA pensando...";
+        function addMsg(tipo, texto) {
+            const chat = document.getElementById('chat');
+            const div = document.createElement('div');
+            div.className = `msg ${tipo}`;
+            div.innerText = texto;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        async function sendMsg() {
+            const input = document.getElementById('userInput');
+            const prompt = input.value;
+            if(!prompt || !MODEL) return;
+
+            addMsg("user", prompt);
+            input.value = "";
+            document.getElementById('debug').innerText = "Processando habilidades Craft...";
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${modeloFuncional}:generateContent?key=${chaveFinal}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${MODEL}:generateContent?key=${KEY}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ contents: [{ parts: [{ text: "Você é o PapelPrint AI. Responda: O monstro saiu da jaula! Como posso ajudar com as ferramentas Craft? " + txt }] }] })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: CONTEXT + "\n\nUsuário: " + prompt }] }] })
                 });
                 const data = await response.json();
-                resIA.innerText = data.candidates[0].content.parts[0].text;
-            } catch (e) {
-                resIA.innerText = "Erro ao responder: " + e.message;
+                
+                if(data.candidates && data.candidates[0].content) {
+                    addMsg("ia", data.candidates[0].content.parts[0].text);
+                    document.getElementById('debug').innerText = "Pronto.";
+                } else {
+                    addMsg("ia", "A IA não conseguiu gerar uma resposta. Erro: " + JSON.stringify(data));
+                }
+            } catch(e) {
+                addMsg("ia", "Erro de conexão: " + e.message);
             }
         }
     </script>
