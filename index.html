@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PapelPrint AI</title>
+    <style>
+        body { background-color: #0b1020; color: white; font-family: sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        .chat-box { background: #151c30; min-height: 400px; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+        .input-area { display: flex; gap: 10px; }
+        input { flex: 1; padding: 15px; border-radius: 5px; border: none; }
+        button { background: #2563eb; color: white; border: none; padding: 15px 25px; border-radius: 5px; cursor: pointer; }
+        .msg { margin-bottom: 10px; padding: 10px; border-radius: 8px; max-width: 80%; }
+        .ia { background: #29354f; align-self: flex-start; }
+        .user { background: #2563eb; margin-left: auto; text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 PapelPrint AI</h1>
+        <p>Central de Ferramentas: Vector | PDF | Photo | Word</p>
+        
+        <div class="chat-box" id="chat">
+            <div class="msg ia">Olá! Sou o PapelPrint AI. Estou sendo preparado para integrar os 21 repositórios que você enviou.</div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Digite seu pedido para a IA...">
+            <button onclick="send()">Enviar</button>
+        </div>
+        
+        <p style="color: #facc15; margin-top: 20px;">⚙️ Status: Interface Criada. Aguardando conexão com servidor de ferramentas.</p>
+    </div>
+
+    <script>
+        function send() {
+            const input = document.getElementById('userInput');
+            const chat = document.getElementById('chat');
+            if(input.value.trim() === "") return;
+
+            // Mensagem do usuário
+            chat.innerHTML += `<div class="msg user">${input.value}</div>`;
+            
+            // Resposta temporária da IA
+            setTimeout(() => {
+                chat.innerHTML += `<div class="msg ia">Entendi seu pedido. Como estamos no GitHub Pages (gratuito), o próximo passo é conectar o motor de IA e as ferramentas Craft.</div>`;
+                input.value = "";
+                chat.scrollTop = chat.scrollHeight;
+            }, 500);
+        }
+    </script>
+</body>
+</html>
