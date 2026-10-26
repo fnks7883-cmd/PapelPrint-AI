@@ -14,7 +14,7 @@
         .msg { margin-bottom: 15px; padding: 12px 16px; border-radius: 12px; max-width: 85%; line-height: 1.5; white-space: pre-wrap; }
         .ia { background: #29354f; align-self: flex-start; }
         .user { background: #2563eb; margin-left: auto; }
-        .key-area { background: #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 10px; font-size: 13px; }
+        .key-area { background: #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 10px; font-size: 13px; border: 1px solid #facc15; }
         .status-ready { color: #22c55e; font-weight: bold; }
         .status-off { color: #ef4444; font-weight: bold; }
     </style>
@@ -23,43 +23,44 @@
     <div class="container">
         <header style="display: flex; justify-content: space-between; align-items: center;">
             <h1>🧠 PapelPrint AI</h1>
-            <div id="status-badge" class="status-off">IA DESCONECTADA</div>
+            <div id="status-badge" class="status-off">MOTOR DESCONECTADO</div>
         </header>
         
         <div class="key-area">
-            <span>Chave API Gemini:</span>
-            <input type="password" id="apiKey" placeholder="Cole sua chave aqui e clique em conectar..." style="margin: 0 10px; padding: 8px; width: 60%;">
-            <button onclick="saveKey()" style="padding: 8px 15px;">Conectar</button>
+            <strong>⚠️ Ativação:</strong> Cole sua chave (mesmo se começar com AQ) e clique em Conectar.
+            <div style="margin-top:10px;">
+                <input type="password" id="apiKey" placeholder="Cole sua chave aqui..." style="width: 70%;">
+                <button onclick="saveKey()">Conectar IA</button>
+            </div>
         </div>
 
         <div class="chat-box" id="chat">
-            <div class="msg ia">Olá! Insira sua chave API do Google Studio acima para ativar minhas habilidades Craft.</div>
+            <div class="msg ia">Olá! Estou pronto para ser ativado. Cole sua chave acima para liberarmos as habilidades dos seus repositórios (Vectorcraft, PDFcraft, etc.).</div>
         </div>
 
         <div class="input-area">
-            <input type="text" id="userInput" placeholder="O que vamos criar hoje?">
+            <input type="text" id="userInput" placeholder="O que vamos fazer hoje?">
             <button onclick="askIA()">Enviar</button>
         </div>
-        <div id="debugLog" style="font-size: 10px; color: #64748b; margin-top: 5px;"></div>
+        <div id="debugLog" style="font-size: 11px; color: #facc15; margin-top: 5px;"></div>
     </div>
 
     <script>
         let API_KEY = "";
         
-        const SKILLS_CONTEXT = `Você é o PapelPrint AI. Você integra ferramentas gráficas e automação:
-        - Vectorcraft (SVG/Vetores/Sangria)
-        - PDFcraft (Unir/Separar/Preflight)
-        - Wordcraft (Documentos/Timbrados)
-        - Photocraft (Edição de imagem)
-        Responda de forma prestativa e técnica sobre esses temas.`;
+        const SKILLS_CONTEXT = `Você é o PapelPrint AI. Você é um especialista em artes gráficas e automação.
+        Habilidades integradas:
+        - Vectorcraft: Artes vetoriais e SVG.
+        - PDFcraft: Manipulação e Preflight de PDF.
+        - Wordcraft: Timbrados e documentos.
+        Responda de forma profissional e direta.`;
 
         function saveKey() {
-            const rawKey = document.getElementById('apiKey').value;
-            API_KEY = rawKey.trim(); // Remove espaços extras
+            API_KEY = document.getElementById('apiKey').value.trim();
             if (API_KEY) {
-                document.getElementById('status-badge').innerText = "IA PRONTA";
+                document.getElementById('status-badge').innerText = "MOTOR PRONTO";
                 document.getElementById('status-badge').className = "status-ready";
-                addMsg("ia", "Chave salva com sucesso! Pode digitar seu pedido.");
+                addMsg("ia", "Conexão estabelecida! O motor está aquecido. Pode mandar seu pedido.");
             }
         }
 
@@ -75,36 +76,38 @@
         async function askIA() {
             const inputField = document.getElementById('userInput');
             const prompt = inputField.value;
-            if (!prompt || !API_KEY) return alert("Insira a chave e a mensagem!");
+            if (!prompt || !API_KEY) return alert("Por favor, conecte a chave primeiro!");
 
             addMsg("user", prompt);
             inputField.value = "";
             const log = document.getElementById('debugLog');
-            log.innerText = "IA pensando...";
+            log.innerText = "IA está processando as ferramentas Craft...";
 
             try {
-                // Usando a versão v1 estável
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                // Versão v1beta - Aceita chaves novas (AQ) e antigas (AIza)
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+                
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: SKILLS_CONTEXT + "\n\nPergunta: " + prompt }] }]
+                        contents: [{ parts: [{ text: SKILLS_CONTEXT + "\n\nPedido do usuário: " + prompt }] }]
                     })
                 });
 
                 const data = await response.json();
                 
                 if (data.error) {
-                    addMsg("ia", "Erro do Google: " + data.error.message);
-                    log.innerText = "Falha na conexão.";
+                    addMsg("ia", "Ocorreu um problema com a chave: " + data.error.message);
+                    log.innerText = "Erro: " + data.error.status;
                 } else {
                     const reply = data.candidates[0].content.parts[0].text;
                     addMsg("ia", reply);
-                    log.innerText = "Resposta recebida.";
+                    log.innerText = "Resposta gerada com sucesso.";
                 }
             } catch (error) {
-                addMsg("ia", "Erro técnico: Não foi possível alcançar o servidor da IA. Verifique sua internet ou AdBlock.");
-                log.innerText = error.message;
+                addMsg("ia", "Erro técnico de conexão. Tente desativar extensões de bloqueio de anúncio.");
+                log.innerText = "Erro: " + error.message;
             }
         }
     </script>
