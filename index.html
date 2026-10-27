@@ -5,46 +5,57 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PapelPrint AI</title>
 <style>
-  :root{--bg:#f6f5f2;--card:#fff;--ink:#1d1d1b;--mute:#6b6b66;--line:#dcdad3;--acc:#0b5fff;--user:#e8efff;--bot:#fff}
-  @media (prefers-color-scheme:dark){:root{--bg:#161614;--card:#201f1d;--ink:#eeede8;--mute:#9a9992;--line:#38372f;--acc:#6b9bff;--user:#1f2a44;--bot:#201f1d}}
+  :root{--bg:#f6f5f2;--card:#fff;--ink:#1d1d1b;--mute:#6b6b66;--line:#dcdad3;--acc:#0b5fff;--user:#e8efff;--bot:#fff;--err:#c62828}
+  @media (prefers-color-scheme:dark){:root{--bg:#161614;--card:#201f1d;--ink:#eeede8;--mute:#9a9992;--line:#38372f;--acc:#6b9bff;--user:#1f2a44;--bot:#201f1d;--err:#ef7a7a}}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,Segoe UI,Arial,sans-serif;display:flex;flex-direction:column;min-height:100vh}
   header{padding:14px 16px;border-bottom:1px solid var(--line);background:var(--card)}
   h1{margin:0;font-size:18px}
-  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  h2{margin:0 0 6px;font-size:14px;color:var(--mute);font-weight:600}
   input,select,textarea,button{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
-  input[type=password]{flex:1 1 220px;min-width:0}
-  select{flex:1 1 200px;min-width:0}
   button{cursor:pointer;background:var(--acc);color:#fff;border-color:var(--acc)}
   button.sec{background:var(--card);color:var(--ink);border-color:var(--line)}
   button:disabled{opacity:.5;cursor:default}
-  #status{font-size:13px;color:var(--mute);margin-top:8px;min-height:1.3em}
-  #status.err{color:#c62828}
+  .prov{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+  .prov label{flex:0 0 90px;font-weight:600;font-size:14px}
+  .prov input{flex:1 1 220px;min-width:0}
+  .prov .st{flex:1 1 100%;font-size:13px;color:var(--mute);margin:-2px 0 2px 98px}
+  .prov .st.err{color:var(--err)}
+  .prov .st.ok{color:#2e7d32}
+  #models{max-width:860px;margin:0 auto;padding:10px 16px 0;width:100%}
+  .grp{margin-bottom:8px}
+  .grp b{font-size:13px;color:var(--mute)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .chip{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:13px;background:var(--card);cursor:pointer}
+  .chip input{margin:0;padding:0}
+  .chip.on{border-color:var(--acc);background:var(--user)}
+  #hint{font-size:13px;color:var(--mute);padding:6px 16px 0;max-width:860px;margin:0 auto;width:100%}
   main{flex:1;width:100%;max-width:860px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:12px}
   .msg{padding:10px 12px;border-radius:10px;border:1px solid var(--line);white-space:pre-wrap;word-wrap:break-word}
   .msg.user{background:var(--user);align-self:flex-end;max-width:90%}
-  .msg.bot{background:var(--bot);align-self:flex-start;max-width:100%}
-  .msg.err{border-color:#c62828;color:#c62828}
+  .answers{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+  .ans{background:var(--bot);border:1px solid var(--line);border-radius:10px;padding:10px 12px;white-space:pre-wrap;word-wrap:break-word;min-width:0}
+  .ans .who{font-size:12px;color:var(--mute);margin-bottom:4px;font-weight:600}
+  .ans.err{border-color:var(--err);color:var(--err)}
   footer{position:sticky;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:12px 16px}
   .row{max-width:860px;margin:0 auto;display:flex;gap:8px}
   #q{flex:1;resize:none;min-height:44px;max-height:160px}
-  details{max-width:860px;margin:0 auto;padding:0 16px 10px;width:100%}
+  details{max-width:860px;margin:0 auto;padding:8px 16px 0;width:100%}
   summary{cursor:pointer;color:var(--mute);font-size:14px}
   #sys{width:100%;min-height:200px;margin-top:8px}
-  .note{font-size:13px;color:var(--mute)}
+  .top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
 </style>
 </head>
 <body>
 <header>
-  <h1>PapelPrint AI</h1>
-  <div class="bar">
-    <input id="key" type="password" autocomplete="off" placeholder="Cole sua chave da Groq (gsk_...)">
-    <button id="connect">Conectar</button>
-    <select id="model" disabled><option>Conecte para listar os modelos</option></select>
-    <button id="clear" class="sec">Limpar conversa</button>
-  </div>
-  <div id="status">A chave fica só na memória desta aba e vai direto para a Groq. Nunca a escreva no código nem no GitHub.</div>
+  <div class="top"><h1>PapelPrint AI</h1><button id="clear" class="sec">Limpar conversa</button></div>
+  <h2 style="margin-top:8px">1) Conecte um ou mais provedores</h2>
+  <div id="provs"></div>
+  <div class="note" style="font-size:13px;color:var(--mute);margin-top:8px">As chaves ficam só na memória desta aba e vão direto para cada provedor. Nunca as escreva no código nem no GitHub.</div>
 </header>
+
+<div id="models"><h2>2) Escolha os modelos (marque 1 ou mais para comparar)</h2><div id="chips"><span style="font-size:13px;color:var(--mute)">Conecte um provedor para listar os modelos.</span></div></div>
+<div id="hint"></div>
 
 <details>
   <summary>Instruções do sistema (editáveis)</summary>
@@ -62,7 +73,17 @@
 
 <script>
 (function(){
-  var API = "https://api.groq.com/openai/v1";
+  var PROVIDERS = [
+    { id:"groq", name:"Groq", base:"https://api.groq.com/openai/v1", ph:"gsk_...", prefix:"gsk_",
+      filter:function(id){ return !/whisper|guard|tts|playai|orpheus|embed|safeguard/i.test(id); },
+      clean:function(id){ return id; } },
+    { id:"gemini", name:"Gemini", base:"https://generativelanguage.googleapis.com/v1beta/openai", ph:"Chave do AI Studio (AIza...)", prefix:"",
+      filter:function(id){ return /gemini|gemma/i.test(id) && !/embed|tts|image|live|audio|aqa|vision-only/i.test(id); },
+      clean:function(id){ return id.replace(/^models\//,""); } },
+    { id:"openrouter", name:"OpenRouter", base:"https://openrouter.ai/api/v1", ph:"sk-or-...", prefix:"",
+      filter:function(id){ return /:free$/i.test(id); },
+      clean:function(id){ return id; } }
+  ];
   var DEFAULT_SYSTEM = [
     "Você é o PapelPrint AI, assistente de uma gráfica (cartões, pastas, envelopes e timbrados) e de explicações para provas e concursos. Responda em português do Brasil, direto e prático, sem elogios exagerados.",
     "",
@@ -73,102 +94,152 @@
     "- PDF estruturalmente válido não é PDF pronto para gráfica. Sangria, resolução, perfil ICC, PDF/X e fidelidade visual precisam de verificação própria.",
     "- Em conteúdo de prova e concurso, cite a fonte (lei, artigo, edital) e marque o que não puder confirmar.",
     "",
-    "Conhecimento verificado por leitura de código (nada foi compilado nem executado):",
-    "- Família storytold/*craft (vectorcraft, designcraft, pdfcraft, photocraft, lightcraft, wordcraft, effectcraft, filmcraft, figcraft, gridcraft, cadcraft, soundcraft, deckcraft): aplicativos nativos em Rust, licença MIT ou Apache-2.0, cada um com CLI e servidor MCP. NÃO são skills. Estão em alfa ou pré-alfa e precisam ser compilados (Rust 1.95+). A marca ArtCraft não é coberta pela licença.",
-    "- VectorCraft: editor vetorial; o código tem exportação de PDF com sangria, marcas de corte, CMYK e variantes de PDF/X. Em alfa; não comprovado por teste.",
-    "- DesignCraft: diagramação multipágina em pré-alfa; a exportação para impressão ainda está incompleta.",
-    "- PdfCraft: ferramenta de PDF. O módulo de preflight verifica PDF/A, não PDF/X nem critérios de gráfica. A comparação é de texto. Faz imposição (livreto, pôster).",
-    "- OpenMAIC: aulas com vários agentes (slides, quizzes, narração), foco útil para explicações de provas.",
-    "- OpenClaude: derivado de código proprietário sem autorização de distribuição; evitar.",
-    "- OmniRoute: gateway de IA com vários provedores. Claude-mem e Headroom: ferramentas para o Claude Code. MonkeyCode: AGPL-3.0. MiniMind: treino de modelo pequeno. Vibe Coding Toolkit: guias e prompts.",
+    "Conhecimento verificado por leitura de código (apenas o VectorCraft foi testado de fato):",
+    "- Família storytold/*craft (vectorcraft, designcraft, pdfcraft, photocraft, lightcraft, wordcraft, effectcraft, filmcraft, figcraft, gridcraft, cadcraft, soundcraft, deckcraft): aplicativos nativos em Rust, MIT ou Apache-2.0, com CLI e servidor MCP, em alfa ou pré-alfa. NÃO são skills. Têm pacotes prontos (Windows, Linux, macOS) nas releases do GitHub. A marca ArtCraft não é coberta pela licença.",
+    "- VectorCraft: testado. Gerou cartão 90x50 mm com sangria de 3 mm, CMYK, marcas de corte e PDF/X-1a e X-4. O perfil de saída embutido é genérico, não o da gráfica.",
+    "- DesignCraft: diagramação multipágina em pré-alfa; exportação para impressão incompleta.",
+    "- PdfCraft: ferramenta de PDF. O preflight verifica PDF/A, não PDF/X nem critérios de gráfica. A comparação é de texto. Faz imposição (livreto, pôster).",
+    "- OpenMAIC: aulas com vários agentes (slides, quizzes, narração). OpenClaude: derivado de código proprietário; evitar. OmniRoute: gateway de IA. MonkeyCode: AGPL-3.0.",
     "Se faltar informação para responder, diga que não sabe em vez de inventar."
   ].join("\n");
 
   var $ = function(id){return document.getElementById(id)};
-  var keyEl=$("key"), modelEl=$("model"), statusEl=$("status"), logEl=$("log"), qEl=$("q"), sendEl=$("send"), sysEl=$("sys"), connEl=$("connect");
-  var history = [];
-  var apiKey = "";
+  var provsEl=$("provs"), chipsEl=$("chips"), hintEl=$("hint"), logEl=$("log"), qEl=$("q"), sendEl=$("send"), sysEl=$("sys");
   sysEl.value = DEFAULT_SYSTEM;
+  var state = {};          // provider id -> {key, models:[ids]}
+  var active = {};         // "prov|model" -> true
+  var histories = {};      // "prov|model" -> messages
+  var busy = false;
 
-  function setStatus(t, err){ statusEl.textContent = t; statusEl.className = err ? "err" : ""; }
-  function add(role, text, isErr){
-    var d = document.createElement("div");
-    d.className = "msg " + role + (isErr ? " err" : "");
-    d.textContent = text;
-    logEl.appendChild(d);
-    window.scrollTo(0, document.body.scrollHeight);
-    return d;
-  }
+  function el(tag, cls, text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
   function errText(status, body){
-    var m = "";
-    try { m = JSON.parse(body).error.message; } catch(e){ m = (body||"").slice(0,300); }
-    return "Erro " + status + ": " + m;
+    var m=""; try{ var j=JSON.parse(body); m=(j.error&&(j.error.message||j.error))||j.message||body; if(typeof m!=="string") m=JSON.stringify(m); }catch(e){ m=(body||"").slice(0,300); }
+    return "Erro "+status+": "+m;
   }
-  // Modelos que não servem para chat
-  function isChat(id){ return !/whisper|guard|tts|playai|orpheus|embed|distil-whisper|prompt-guard|safeguard/i.test(id); }
-  // Preferência: modelos maiores e mais novos primeiro
   function rank(id){
-    var s = 0;
-    if (/70b|120b|405b|maverick|scout|kimi|qwen3-32b|gpt-oss/i.test(id)) s += 10;
-    if (/versatile/i.test(id)) s += 3;
-    if (/8b|instant/i.test(id)) s += 1;
+    var s=0;
+    if(/70b|120b|405b|maverick|kimi|qwen3|gpt-oss|pro|2\.5|3\.|r1|deepseek/i.test(id)) s+=10;
+    if(/flash|versatile/i.test(id)) s+=3;
     return -s;
   }
 
-  async function connect(){
-    apiKey = keyEl.value.trim();
-    if (!/^gsk_/.test(apiKey)) { setStatus("A chave da Groq começa com gsk_. Confira o que você colou.", true); return; }
-    connEl.disabled = true; setStatus("Conectando e listando os modelos disponíveis para a sua chave...");
-    try {
-      var r = await fetch(API + "/models", { headers: { "Authorization": "Bearer " + apiKey } });
+  // Linhas de conexão
+  PROVIDERS.forEach(function(p){
+    var row = el("div","prov");
+    var lab = el("label",null,p.name); lab.setAttribute("for","k-"+p.id);
+    var inp = el("input"); inp.type="password"; inp.id="k-"+p.id; inp.autocomplete="off"; inp.placeholder=p.ph;
+    var btn = el("button",null,"Conectar"); btn.id="c-"+p.id;
+    var st = el("div","st"); st.id="s-"+p.id;
+    row.appendChild(lab); row.appendChild(inp); row.appendChild(btn); row.appendChild(st);
+    provsEl.appendChild(row);
+    btn.addEventListener("click", function(){ connect(p); });
+    inp.addEventListener("keydown", function(e){ if(e.key==="Enter") connect(p); });
+  });
+  function pst(p, text, cls){ var s=$("s-"+p.id); s.textContent=text; s.className="st "+(cls||""); }
+
+  async function connect(p){
+    var inp=$("k-"+p.id), btn=$("c-"+p.id), key=inp.value.trim();
+    if(!key){ pst(p,"Cole a chave primeiro.","err"); return; }
+    if(p.prefix && key.indexOf(p.prefix)!==0){ pst(p,"A chave da "+p.name+" deveria começar com "+p.prefix+". Confira o que você colou.","err"); return; }
+    btn.disabled=true; pst(p,"Conectando e listando modelos...");
+    try{
+      var r = await fetch(p.base+"/models",{ headers:{ "Authorization":"Bearer "+key }});
       var body = await r.text();
-      if (!r.ok) { setStatus(errText(r.status, body), true); apiKey = ""; return; }
-      var list = JSON.parse(body).data.map(function(m){return m.id}).filter(isChat).sort(function(a,b){return rank(a)-rank(b) || a.localeCompare(b)});
-      if (!list.length) { setStatus("A chave funcionou, mas nenhum modelo de chat foi listado.", true); return; }
-      modelEl.innerHTML = "";
-      list.forEach(function(id){ var o=document.createElement("option"); o.value=id; o.textContent=id; modelEl.appendChild(o); });
-      modelEl.disabled = false; qEl.disabled = false; sendEl.disabled = false;
-      keyEl.value = "";  // limpa o campo; a chave fica só em memória
-      setStatus("Conectado. " + list.length + " modelos de chat disponíveis para esta chave. Escolha um e escreva.");
-    } catch(e){
-      setStatus("Falha de rede ou bloqueio do navegador (CORS): " + e.message, true);
-    } finally { connEl.disabled = false; }
+      if(!r.ok){ pst(p,errText(r.status,body),"err"); return; }
+      var data = JSON.parse(body).data || [];
+      var ids = data.map(function(m){return m.id}).filter(p.filter).map(p.clean);
+      ids = ids.filter(function(v,i){return ids.indexOf(v)===i}).sort(function(a,b){return rank(a)-rank(b)||a.localeCompare(b)});
+      if(!ids.length){ pst(p,"Chave aceita, mas nenhum modelo de chat compatível apareceu na lista.","err"); return; }
+      state[p.id]={ key:key, models:ids };
+      inp.value="";
+      pst(p,"Conectado. "+ids.length+" modelos disponíveis para esta chave.","ok");
+      var any=false; for(var k in active){ if(active[k]) any=true; }
+      if(!any) active[p.id+"|"+ids[0]]=true;
+      renderChips(); qEl.disabled=false; sendEl.disabled=false;
+    }catch(e){
+      pst(p,"Falha de rede ou bloqueio do navegador (CORS): "+e.message,"err");
+    }finally{ btn.disabled=false; }
+  }
+
+  function renderChips(){
+    chipsEl.innerHTML="";
+    PROVIDERS.forEach(function(p){
+      var s=state[p.id]; if(!s) return;
+      var g=el("div","grp"); g.appendChild(el("b",null,p.name));
+      var c=el("div","chips");
+      s.models.forEach(function(m){
+        var k=p.id+"|"+m;
+        var lab=el("label","chip"+(active[k]?" on":""));
+        var cb=el("input"); cb.type="checkbox"; cb.checked=!!active[k];
+        cb.addEventListener("change",function(){ active[k]=cb.checked; renderChips(); updateHint(); });
+        lab.appendChild(cb); lab.appendChild(document.createTextNode(m));
+        c.appendChild(lab);
+      });
+      g.appendChild(c); chipsEl.appendChild(g);
+    });
+    updateHint();
+  }
+  function activeList(){
+    var out=[]; for(var k in active){ if(active[k]){ var i=k.indexOf("|"); out.push({prov:k.slice(0,i), model:k.slice(i+1), key:k}); } }
+    return out;
+  }
+  function updateHint(){
+    var n=activeList().length;
+    hintEl.textContent = n===0 ? "Marque pelo menos um modelo." : n===1 ? "1 modelo ativo." : n+" modelos ativos: a mesma pergunta vai para todos e as respostas aparecem lado a lado. Cada um mantém o próprio histórico.";
+    if(n>4) hintEl.textContent += " Atenção: muitos modelos ao mesmo tempo podem bater no limite gratuito do provedor.";
+  }
+
+  function add(role,text){ var d=el("div","msg "+role,text); logEl.appendChild(d); return d; }
+
+  async function ask(item, userText, cardEl){
+    var p = PROVIDERS.filter(function(x){return x.id===item.prov})[0];
+    var s = state[item.prov];
+    var h = histories[item.key] = histories[item.key] || [];
+    h.push({role:"user", content:userText});
+    var msgs=[{role:"system", content:sysEl.value}].concat(h);
+    try{
+      var r = await fetch(p.base+"/chat/completions",{
+        method:"POST",
+        headers:{ "Authorization":"Bearer "+s.key, "Content-Type":"application/json" },
+        body: JSON.stringify({ model:item.model, messages:msgs, temperature:0.3 })
+      });
+      var body = await r.text();
+      if(!r.ok){
+        h.pop();
+        cardEl.body.textContent = errText(r.status,body)+"\nSe o modelo não estiver disponível para a sua chave, desmarque-o e escolha outro.";
+        cardEl.box.className="ans err";
+        return;
+      }
+      var out = (JSON.parse(body).choices||[{message:{content:""}}])[0].message.content || "";
+      cardEl.body.textContent = out;
+      h.push({role:"assistant", content:out});
+    }catch(e){
+      h.pop();
+      cardEl.body.textContent="Falha de rede: "+e.message; cardEl.box.className="ans err";
+    }
   }
 
   async function send(){
-    var text = qEl.value.trim();
-    if (!text || !apiKey) return;
-    qEl.value = ""; sendEl.disabled = true;
-    add("user", text);
-    history.push({role:"user", content:text});
-    var wait = add("bot", "...");
-    var msgs = [{role:"system", content: sysEl.value}].concat(history);
-    try {
-      var r = await fetch(API + "/chat/completions", {
-        method:"POST",
-        headers:{ "Authorization":"Bearer " + apiKey, "Content-Type":"application/json" },
-        body: JSON.stringify({ model: modelEl.value, messages: msgs, temperature: 0.3 })
-      });
-      var body = await r.text();
-      if (!r.ok) {
-        wait.textContent = errText(r.status, body) + "\nSe o modelo não existir para a sua chave, escolha outro na lista.";
-        wait.className = "msg bot err";
-        history.pop();
-      } else {
-        var out = JSON.parse(body).choices[0].message.content || "";
-        wait.textContent = out;
-        history.push({role:"assistant", content: out});
-      }
-    } catch(e){
-      wait.textContent = "Falha de rede: " + e.message; wait.className = "msg bot err"; history.pop();
-    } finally { sendEl.disabled = false; qEl.focus(); }
+    if(busy) return;
+    var text=qEl.value.trim(); var list=activeList();
+    if(!text) return;
+    if(!list.length){ hintEl.textContent="Marque pelo menos um modelo antes de enviar."; return; }
+    busy=true; sendEl.disabled=true; qEl.value="";
+    add("user",text);
+    var wrap=el("div","answers"); logEl.appendChild(wrap);
+    var jobs=list.map(function(item){
+      var box=el("div","ans"); var who=el("div","who",item.prov+" · "+item.model); var body=el("div",null,"...");
+      box.appendChild(who); box.appendChild(body); wrap.appendChild(box);
+      return ask(item,text,{box:box,body:body});
+    });
+    await Promise.all(jobs);
+    busy=false; sendEl.disabled=false; qEl.focus();
+    window.scrollTo(0,document.body.scrollHeight);
   }
 
-  connEl.addEventListener("click", connect);
-  keyEl.addEventListener("keydown", function(e){ if(e.key==="Enter") connect(); });
-  sendEl.addEventListener("click", send);
-  qEl.addEventListener("keydown", function(e){ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); send(); } });
-  $("clear").addEventListener("click", function(){ history = []; logEl.innerHTML = ""; });
+  sendEl.addEventListener("click",send);
+  qEl.addEventListener("keydown",function(e){ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); send(); } });
+  $("clear").addEventListener("click",function(){ histories={}; logEl.innerHTML=""; });
 })();
 </script>
 </body>
